@@ -1,9 +1,10 @@
 # AzurePracticeFunction
 
-Here Azure Function is dealing with data on respect of CosmosDB.
+## Here Azure Function is dealing with data on respect of CosmosDB.
 
 * local.settings.json file main Details -  
 
+```sh
  {
   "IsEncrypted": false,
   "Values": {
@@ -16,3 +17,4 @@ Here Azure Function is dealing with data on respect of CosmosDB.
     "ContainerName": ""
   }
 }
+```
