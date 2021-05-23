@@ -28,24 +28,73 @@ namespace CosmosFunction.CosmosService
             return Response.Response<string>.Fail("Failed");
         }
 
-        public Task<bool> DeleteItemAsync(string id)
+        public async Task<bool> DeleteItemAsync(string id, string partitionKey)
         {
-            throw new NotImplementedException();
+            var response = _container.DeleteItemAsync<AddDetails>(id, new PartitionKey(partitionKey)).GetAwaiter().GetResult();
+            if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+            {
+                return true;
+            }
+            return false;
         }
 
-        public Task<AddDetails> GetItemAsync(string id)
+        public async Task<AddDetails> GetItemAsync(string id)
         {
-            throw new NotImplementedException();
+            string query = $"select * from c where c.id = '{id}'";
+            QueryDefinition queryDefinition = new QueryDefinition(query);
+            FeedIterator<AddDetails> feedIterator = _container.GetItemQueryIterator<AddDetails>(queryDefinition);
+            AddDetails details = new AddDetails();
+            while (feedIterator.HasMoreResults)
+            {
+                FeedResponse<AddDetails> feedResponse = feedIterator.ReadNextAsync().GetAwaiter().GetResult();
+                foreach (var responseDetails in feedResponse)
+                {
+                    details.id = responseDetails.id;
+                    details.EmailID = responseDetails.EmailID;
+                    details.UniqueId = responseDetails.UniqueId;
+                    details.UniqueName = responseDetails.UniqueName;
+                    details.items = responseDetails.items;
+                }
+            }
+            return details;
         }
 
-        public Task<IEnumerable<AddDetails>> GetItemsAsync(string query)
+        public async Task<List<AddDetails>> GetItemsAsync(string query)
         {
-            throw new NotImplementedException();
+            QueryDefinition queryDefinition = new QueryDefinition(query);
+            FeedIterator<AddDetails> feedIterator = _container.GetItemQueryIterator<AddDetails>(queryDefinition);
+            AddDetails details = new AddDetails();
+            List<AddDetails> listDetails = new List<AddDetails>();
+            while (feedIterator.HasMoreResults)
+            {
+                FeedResponse<AddDetails> feedResponse = feedIterator.ReadNextAsync().GetAwaiter().GetResult();
+                foreach (var responseDetails in feedResponse)
+                {
+                    details.id = responseDetails.id;
+                    details.EmailID = responseDetails.EmailID;
+                    details.UniqueId = responseDetails.UniqueId;
+                    details.UniqueName = responseDetails.UniqueName;
+                    details.items = responseDetails.items;
+                    listDetails.Add(details);
+                }               
+            }
+            return listDetails;
         }
 
-        public Task<bool> UpdateItemAsync(string id, AddDetails item)
+        public async Task<bool> UpdateItemAsync(string id, AddDetails item)
         {
-            throw new NotImplementedException();
+            //ItemResponse<AddDetails> itemResponse =  _container.ReadItemAsync<AddDetails>(id, new PartitionKey(item.UniqueId)).GetAwaiter().GetResult();
+            //AddDetails addDetails = itemResponse.Resource;
+
+            //addDetails.EmailID = item.EmailID;           
+
+            var response = _container.ReplaceItemAsync<AddDetails>(item, id,new PartitionKey(item.UniqueId)).GetAwaiter().GetResult();
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
