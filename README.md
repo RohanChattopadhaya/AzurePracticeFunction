@@ -18,3 +18,5 @@
   }
 }
 ```
+
+## Here in this repository crud operation present of azure function with cosmos component
